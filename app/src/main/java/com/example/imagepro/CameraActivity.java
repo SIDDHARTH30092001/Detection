@@ -11,17 +11,25 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -33,15 +41,11 @@ import org.opencv.core.Mat;
 import java.io.IOException;
 
 public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, OnMapReadyCallback {
-    //private static final String TAG = "MainActivity";
 
     private Mat mRgba;
     private Mat mGray;
     private CameraBridgeViewBase mOpenCvCameraView;
     private objectDetectorClass objectDetectorClass;
-    Button button;
-
-    MapView mapView;
     GoogleMap map;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -51,7 +55,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             switch (status) {
                 case LoaderCallbackInterface
                         .SUCCESS: {
-                    //Log.i(TAG, "OpenCv Is loaded");
                     mOpenCvCameraView.enableView();
                 }
                 default: {
@@ -64,27 +67,22 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         }
     };
 
-/*  public CameraActivity() {
-        Log.i(TAG, "Instantiated new " + this.getClass());
-    }*/
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        setContentView(R.layout.activity_camera);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapview);
+        mapFragment.getMapAsync(this);
 
         int MY_PERMISSIONS_REQUEST_CAMERA = 0;
-        // if camera permission is not given it will ask for it on device
         if (ContextCompat.checkSelfPermission(CameraActivity.this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(CameraActivity.this, new String[]{Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_CAMERA);
         }
 
-        setContentView(R.layout.activity_camera);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
@@ -92,49 +90,27 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         mOpenCvCameraView.setCvCameraViewListener(this);
         try {
             objectDetectorClass = new objectDetectorClass(getAssets(), "hand_model.tflite", "custom_label.txt", 300,"model.tflite",96);
-            //Log.d("MainActivity", "Model is successfully loaded");
         } catch (IOException e) {
-            //Log.d("MainActivity", "Getting some error");
             e.printStackTrace();
         }
 
-
-        mapView = (MapView) findViewById(R.id.mapview);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
-
-
     }
 
-
-
-    @Override
-    public void onStart() {
-
-        super.onStart();
-        mapView.onStart();
-    }
 
     @Override
     protected void onResume() {
-        mapView.onResume();
         super.onResume();
 
         if (OpenCVLoader.initDebug()) {
-            //if load success
-           // Log.d(TAG, "Opencv initialization is done");
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 
         } else {
-            //if not loaded
-           // Log.d(TAG, "Opencv is not loaded. try again");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback);
         }
     }
 
     @Override
     protected void onPause() {
-        mapView.onPause();
         super.onPause();
 
         if (mOpenCvCameraView != null) {
@@ -142,25 +118,12 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         }
     }
 
-    @Override
-    protected void onStop() {
-        mapView.onStop();
-        super.onStop();
-    }
 
     public void onDestroy() {
-        mapView.onDestroy();
         super.onDestroy();
         if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
-    }
-
-    @Override
-    public void onLowMemory() {
-        mapView.onLowMemory();
-        super.onLowMemory();
-
     }
 
     public void onCameraViewStarted(int width, int height) {
@@ -183,7 +146,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         map = googleMap;
-        map.getUiSettings().setMyLocationButtonEnabled(false);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }

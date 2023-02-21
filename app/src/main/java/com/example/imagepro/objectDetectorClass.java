@@ -1,26 +1,15 @@
 package com.example.imagepro;
 
-import android.content.Context;
-import android.content.Intent;
+
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
+;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 
-import org.checkerframework.checker.units.qual.C;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -44,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class objectDetectorClass  {
+public class objectDetectorClass extends CameraActivity {
     // should start from small letter
 
     // this is used to load model and predict
@@ -67,10 +56,8 @@ public class objectDetectorClass  {
     public String sign_val;
     public String value;
     private int Classification_Input_Size = 0;
-    //CameraActivity cameraActivity;
 
     public objectDetectorClass(AssetManager assetManager, String modelPath, String labelPath, int inputSize, String classification_model, int classification_input_size) throws IOException {
-        //super(context);
         INPUT_SIZE = inputSize;
         Classification_Input_Size = classification_input_size;
         // use to define gpu or cpu // no. of threads
@@ -84,7 +71,7 @@ public class objectDetectorClass  {
         labelList = loadLabelList(assetManager, labelPath);
 
         Interpreter.Options options2 = new Interpreter.Options();
-        options2.setNumThreads(2);
+        options2.setNumThreads(4);
         interpreter2 = new Interpreter(loadModelFile(assetManager, classification_model), options2);
 
 
@@ -233,7 +220,6 @@ public class objectDetectorClass  {
 
 
 
-
                 Imgproc.putText(rotated_mat_image, "" + sign_val, new Point(x1 + 10, y1 + 40), 2, 1.5, new Scalar(255, 0, 0, 255), 2);
 
                 // draw rectangle in Original frame //  starting point    // ending point of box  // color of box       thickness
@@ -257,7 +243,7 @@ public class objectDetectorClass  {
         // zoomin
         if (sig_v >= -0.5 & sig_v < 0.5) {
             value = "A";
-            }
+        }
         //zoomout
          else if (sig_v >= 0.5 & sig_v < 1.5) {
             value = "B";
@@ -267,6 +253,8 @@ public class objectDetectorClass  {
         }
         return value;
     }
+
+
 
 
 
@@ -338,6 +326,4 @@ public class objectDetectorClass  {
         }
         return byteBuffer;
     }
-
-
 }

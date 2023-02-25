@@ -1,32 +1,18 @@
 package com.example.imagepro;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.os.PersistableBundle;
-import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 
@@ -45,10 +31,13 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private Mat mRgba;
     private Mat mGray;
     private CameraBridgeViewBase mOpenCvCameraView;
-    private objectDetectorClass objectDetectorClass;
+    objectDetectorClass objectDetectorClass;
     GoogleMap map;
+    SupportMapFragment mapFragment;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+
+
 
         @Override
         public void onManagerConnected(int status) {
@@ -68,13 +57,16 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     };
 
 
+
+
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapview);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mape);
         mapFragment.getMapAsync(this);
 
         int MY_PERMISSIONS_REQUEST_CAMERA = 0;
@@ -87,14 +79,13 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.frame_Surface);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCameraIndex(1);
+        mOpenCvCameraView.setMaxFrameSize(480, 640);
         mOpenCvCameraView.setCvCameraViewListener(this);
-        try {
-            objectDetectorClass = new objectDetectorClass(getAssets(), "hand_model.tflite", "custom_label.txt", 300,"model.tflite",96);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
     }
+
+
 
 
     @Override
@@ -139,16 +130,20 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
         Mat out;
-        out = objectDetectorClass.recognizeImage(mGray);
+        out = objectDetectorClass.recognizeImage(mRgba);
         return out;
     }
 
     @Override
-    public void onMapReady(@NonNull GoogleMap googleMap) {
+    public void onMapReady( GoogleMap googleMap) {
         map = googleMap;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+        try {
+            objectDetectorClass = new objectDetectorClass(map, getAssets(), "hand_model.tflite", "custom_label.txt", 300,"model.tflite",96);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-}
+
+    }
+
 
 }

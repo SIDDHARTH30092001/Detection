@@ -1,6 +1,10 @@
 package com.example.imagepro;
 
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -8,8 +12,10 @@ import android.graphics.Bitmap;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
 
 
+import org.checkerframework.checker.units.qual.C;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -33,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class objectDetectorClass extends CameraActivity {
+public class objectDetectorClass extends CameraActivity{
     // should start from small letter
 
     // this is used to load model and predict
@@ -52,32 +58,33 @@ public class objectDetectorClass extends CameraActivity {
     private GpuDelegate gpuDelegate;
     private int height = 0;
     private int width = 0;
-
-    public String sign_val;
     public String value;
-    private int Classification_Input_Size = 0;
 
-    public objectDetectorClass(AssetManager assetManager, String modelPath, String labelPath, int inputSize, String classification_model, int classification_input_size) throws IOException {
+    String sign_val;
+    private int Classification_Input_Size = 0;
+    GoogleMap maps;
+
+
+    public objectDetectorClass(GoogleMap map, AssetManager assetManager, String modelPath, String labelPath, int inputSize, String classification_model, int classification_input_size) throws IOException {
+
+        maps=map;
         INPUT_SIZE = inputSize;
         Classification_Input_Size = classification_input_size;
         // use to define gpu or cpu // no. of threads
         Interpreter.Options options = new Interpreter.Options();
         gpuDelegate = new GpuDelegate();
         options.addDelegate(gpuDelegate);
-        options.setNumThreads(4); // set it according to your phone
+        options.setNumThreads(2); // set it according to your phone
         // loading model
         interpreter = new Interpreter(loadModelFile(assetManager, modelPath), options);
         // load labelmap
         labelList = loadLabelList(assetManager, labelPath);
 
         Interpreter.Options options2 = new Interpreter.Options();
-        options2.setNumThreads(4);
+        options2.setNumThreads(2);
         interpreter2 = new Interpreter(loadModelFile(assetManager, classification_model), options2);
 
-
-
     }
-
 
 
 
@@ -116,7 +123,7 @@ public class objectDetectorClass extends CameraActivity {
         Mat rotated_mat_image = new Mat();
 
         Mat a = mat_image.t();
-        Core.flip(a, rotated_mat_image, 0);
+        Core.flip(a, rotated_mat_image, -1);
         // Release mat
         a.release();
 
@@ -241,15 +248,26 @@ public class objectDetectorClass extends CameraActivity {
 
     public String get_alphabets(float sig_v)  {
         // zoomin
+
+
         if (sig_v >= -0.5 & sig_v < 0.5) {
             value = "A";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.zoomIn());
+                }
+            });
         }
         //zoomout
          else if (sig_v >= 0.5 & sig_v < 1.5) {
             value = "B";
-        }
-         else {
-             value="nothing";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.zoomOut());
+                }
+            });
         }
         return value;
     }
@@ -326,4 +344,8 @@ public class objectDetectorClass extends CameraActivity {
         }
         return byteBuffer;
     }
+
+
+
+
 }

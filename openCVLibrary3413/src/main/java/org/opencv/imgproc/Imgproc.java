@@ -3,6 +3,9 @@
 //
 package org.opencv.imgproc;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -26,7 +29,6 @@ import org.opencv.utils.Converters;
 // C++: class Imgproc
 
 public class Imgproc {
-
     private static final int
             IPL_BORDER_CONSTANT = 0,
             IPL_BORDER_REPLICATE = 1,

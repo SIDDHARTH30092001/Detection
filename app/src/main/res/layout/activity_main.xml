@@ -7,16 +7,17 @@
     tools:context=".MainActivity"
     android:gravity="center"
     android:orientation="vertical"
+    android:background="#262A40"
     >
 
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hand Detection"
+        android:text="Detect It!"
         android:textAllCaps="false"
         android:textSize="40dp"
-        android:textColor="@color/black"
+        android:textColor="#D5BEBE"
         android:textStyle="bold"
         android:layout_marginBottom="30dp"
         />

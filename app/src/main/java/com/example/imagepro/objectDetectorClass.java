@@ -212,27 +212,39 @@ public class objectDetectorClass extends CameraActivity{
                 float h1 = y2 - y1;
 
                 Rect cropped_roi = new Rect((int) x1, (int) y1, (int) w1, (int) h1);
-                Mat cropped = new Mat(rotated_mat_image, cropped_roi).clone();
-                Bitmap bitmap1 = null;
-                bitmap1 = Bitmap.createBitmap(cropped.cols(), cropped.rows(), Bitmap.Config.ARGB_8888);
-                Utils.matToBitmap(cropped, bitmap1);
+                try {
+                    Mat cropped = new Mat(rotated_mat_image, cropped_roi).clone();
+                    Bitmap bitmap1 = null;
+                    bitmap1 = Bitmap.createBitmap(cropped.cols(), cropped.rows(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(cropped, bitmap1);
 
-                Bitmap scaledBitmap1 = Bitmap.createScaledBitmap(bitmap1, Classification_Input_Size, Classification_Input_Size, false);
-                ByteBuffer byteBuffer1 = convertBitmapToByteBuffer1(scaledBitmap1);
+                    Bitmap scaledBitmap1 = Bitmap.createScaledBitmap(bitmap1, Classification_Input_Size, Classification_Input_Size, false);
+                    ByteBuffer byteBuffer1 = convertBitmapToByteBuffer1(scaledBitmap1);
 
-                float[][] output_class_value = new float[1][1];
-                interpreter2.run(byteBuffer1, output_class_value);
-
-                sign_val = get_alphabets(output_class_value[0][0]);
-
+                    float[][] output_class_value = new float[1][1];
+                    interpreter2.run(byteBuffer1, output_class_value);
 
 
-                Imgproc.putText(rotated_mat_image, "" + sign_val, new Point(x1 + 10, y1 + 40), 2, 1.5, new Scalar(255, 0, 0, 255), 2);
+                    sign_val = get_alphabets(output_class_value[0][0]);
 
-                // draw rectangle in Original frame //  starting point    // ending point of box  // color of box       thickness
-                Imgproc.rectangle(rotated_mat_image, new Point(x1, y1), new Point(x2, y2), new Scalar(0, 255, 0, 255), 2);
-                // write text on frame
-                // string of class name of object  // starting point                         // color of text           // size of text
+
+
+                    Imgproc.putText(rotated_mat_image, "" + sign_val, new Point(x1 + 10, y1 + 40), 2, 1.5, new Scalar(255, 0, 0, 255), 2);
+
+                    // draw rectangle in Original frame //  starting point    // ending point of box  // color of box       thickness
+                    Imgproc.rectangle(rotated_mat_image, new Point(x1, y1), new Point(x2, y2), new Scalar(0, 255, 0, 255), 2);
+                    // write text on frame
+                    // string of class name of object  // starting point                         // color of text           // size of text
+
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
+
+
+
 
 
             }
@@ -247,25 +259,67 @@ public class objectDetectorClass extends CameraActivity{
     }
 
     public String get_alphabets(float sig_v)  {
-        // zoomin
+
+        //ZOOM IN //maps.animateCamera(CameraUpdateFactory.zoomIn());
+        //ZOOM OUT //maps.animateCamera(CameraUpdateFactory.zoomOut());
+        //UP //maps.animateCamera(CameraUpdateFactory.scrollBy(0,-1000));
+        //RIGHT //maps.animateCamera(CameraUpdateFactory.scrollBy(1000,0));
+        //DOWN //maps.animateCamera(CameraUpdateFactory.scrollBy(0,1000));
+        //LEFT  //maps.animateCamera(CameraUpdateFactory.scrollBy(-1000,0));
 
 
         if (sig_v >= -0.5 & sig_v < 0.5) {
-            value = "A";
+            value = "ZoomIn";
             runOnUiThread(new Runnable() {
                 @Override
-                public void run() {
+                public void run(){
                     maps.animateCamera(CameraUpdateFactory.zoomIn());
                 }
             });
         }
         //zoomout
          else if (sig_v >= 0.5 & sig_v < 1.5) {
-            value = "B";
+            value = "ZoomOut";
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     maps.animateCamera(CameraUpdateFactory.zoomOut());
+                }
+            });
+        }
+        else if (sig_v >= 1.5 & sig_v < 2.5) {
+            value = "Up";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.scrollBy(0,-1000));
+                }
+            });
+        }
+        else if (sig_v >= 2.5 & sig_v < 3.5) {
+            value = "Right";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.scrollBy(1000,0));
+                }
+            });
+        }
+        else if (sig_v >= 3.5 & sig_v < 4.5) {
+            value = "Down";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.scrollBy(0,1000));
+                }
+            });
+        }
+        else if (sig_v >= 4.5 & sig_v < 5.5) {
+            value = "Left";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    maps.animateCamera(CameraUpdateFactory.scrollBy(-1000,0));
                 }
             });
         }
